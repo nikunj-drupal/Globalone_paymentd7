@@ -1,0 +1,211 @@
+<?php
+
+/**
+ * Implements hook_enable().
+ */
+function commerce_globalone_enable() { 
+
+    $t = get_t();
+    
+    // Step 1 - Define the custom content type
+    $content_type = array(
+        'type'          => 'saved_cards',
+        'name'          => $t('Saved Cards'),
+        'description'   => $t('Saved_Cards Details'),
+        'title_label'   => $t('Title'),
+        'base'          => 'node_content',
+        'custom'        => TRUE,
+    );
+
+    $node_type = node_type_set_defaults($content_type);
+    node_type_save($node_type);
+
+    // Step 2 - Create new fields
+    $fields = array(
+        'carduser_id'  => array(
+            'field_name'    => 'carduser_id',
+            'type'          => 'text',
+            'cardinality'   => 1,
+        ),
+        'securecardmerchantref'  => array(
+            'field_name'    => 'securecardmerchantref',
+            'type'          => 'text',
+            'cardinality'   => 1,
+        ),
+        'cardreference'  => array(
+            'field_name'    => 'cardreference',
+            'type'          => 'text',
+            'cardinality'   => 1,
+        ),
+        'isstored'  => array(
+            'field_name'    => 'isstored',
+            'type'          => 'text',
+            'cardinality'   => 1,
+        ),
+        'scerror'  => array(
+            'field_name'    => 'scerror',
+            'type'          => 'text',
+            'cardinality'   => 1,
+        ),
+        'merchantref'  => array(
+            'field_name'    => 'merchantref',
+            'type'          => 'text',
+            'cardinality'   => 1,
+        ),
+        'cardtype1'  => array(
+            'field_name'    => 'cardtype',
+            'type'          => 'text',
+            'cardinality'   => 1,
+        ),
+        'cardexpiry'  => array(
+            'field_name'    => 'cardexpiry',
+            'type'          => 'text',
+            'cardinality'   => 1,
+        ),
+        'cardnumber'  => array(
+            'field_name'    => 'cardnumber',
+            'type'          => 'text',
+            'cardinality'   => 1,
+        ),
+        'defaultcard'  => array(
+            'field_name'    => 'defaultcard',
+            'type'          => 'list_boolean',
+            'cardinality'   => 1,
+            'settings' => array(
+              'allowed_values' => array(
+                '0' => 'No',
+                '1' => 'Yes',
+              ),
+            ),
+        ),
+    );
+    foreach( $fields as $field ) {
+        field_create_field($field);
+    }
+
+    // Step 3 - Attach fields to content type
+    $instances = array(
+        'carduser_id'  => array(
+            'field_name'   => 'carduser_id',
+            'label'        => $t('User ID'),
+            'required'     => TRUE,
+            'widget'       => array(
+                'type'  => 'text_textfield'
+            ),
+        ),
+        'securecardmerchantref'  => array(
+            'field_name'   => 'securecardmerchantref',
+            'label'        => $t('Secure Card Merchant Ref'),
+            'required'     => TRUE,
+            'widget'       => array(
+                'type'  => 'text_textfield'
+            ),
+		),
+        'cardreference'  => array(
+            'field_name'   => 'cardreference',
+            'label'        => $t('Card Ref'),
+            'required'     => TRUE,
+            'widget'       => array(
+                'type'  => 'text_textfield'
+            ),
+		),
+        'isstored'  => array(
+            'field_name'   => 'isstored',
+            'label'        => $t('Is Stored'),
+            'required'     => TRUE,
+            'widget'       => array(
+                'type'  => 'text_textfield'
+            ),
+		),
+        'scerror'  => array(
+            'field_name'   => 'scerror',
+            'label'        => $t('SC Error'),
+            'widget'       => array(
+                'type'  => 'text_textfield'
+            ),
+		),
+        'merchantref'  => array(
+            'field_name'   => 'merchantref',
+            'label'        => $t('Merchant Ref'),
+            'required'     => TRUE,
+            'widget'       => array(
+                'type'  => 'text_textfield'
+            ),
+		),
+        'cardtype'  => array(
+            'field_name'   => 'cardtype',
+            'label'        => $t('Card Type'),
+            'required'     => TRUE,
+            'widget'       => array(
+                'type'  => 'text_textfield'
+            ),
+		),
+        'cardexpiry'  => array(
+            'field_name'   => 'cardexpiry',
+            'label'        => $t('Card Expiry'),
+            'required'     => TRUE,
+            'widget'       => array(
+                'type'  => 'text_textfield'
+            ),
+        ),
+        'cardnumber'  => array(
+            'field_name'   => 'cardnumber',
+            'label'        => $t('Card Number'),
+            'required'     => TRUE,
+            'widget'       => array(
+                'type'  => 'text_textfield'
+            ),
+        ),
+        'defaultcard'  => array(
+            'field_name'   => 'defaultcard',
+            'label'        => $t('Default Card'),
+            'type'         => 'list_boolean',
+            'widget'       => array(
+                'type'  => 'options_onoff'
+            ),
+            'settings' => array(
+              'allowed_values' => array(
+                '0' => 'No',
+                '1' => 'Yes',
+              ),
+            ),
+        ),
+    );
+
+    foreach( $instances as $instance ) { 
+      // Loop through our instances
+      $instance['entity_type']   = 'node';
+      $instance['bundle']        = 'saved_cards';
+      // Attach the instance to our content type
+      field_create_instance($instance);
+    }
+}
+
+/**
+ * Implements hook_disable().
+ */
+function commerce_globalone_disable() {
+	$ournewtype = 'saved_cards';
+	$sql = 'SELECT nid FROM node n WHERE n.type = :type';
+	$result = db_query($sql, array(':type' => $ournewtype));
+	$nodeids = array();
+	foreach ($result as $row) {
+	  $nodeids[] = $row->nid;
+	}
+	node_delete_multiple($nodeids);
+    foreach (field_info_instances('node', $ournewtype) as $field_name => $field) {
+      field_delete_field($field_name);
+    }
+    field_delete_field("carduser_id");
+    field_delete_field("securecardmerchantref");
+    field_delete_field("cardreference");
+    field_delete_field("isstored");
+    field_delete_field("scerror");
+    field_delete_field("merchantref");
+    field_delete_field("cardtype");
+    field_delete_field("cardexpiry");
+    field_delete_field("cardnumber");
+    field_delete_field("defaultcard");
+	node_type_delete($ournewtype);
+    field_purge_batch(1000);
+}
